@@ -1,21 +1,58 @@
-import React from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import CheckoutForm from "./CheckoutForm";
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Купюра путешественница</title>
+</head>
+<body>
+    <h1>История путешествий купюры</h1>
+    <ul id="history-list"></ul>
 
-const stripePromise = loadStripe("your-publishable-key-here");
+    <h2>Оставить сообщение</h2>
+    <input type="text" id="location" placeholder="Ваш город">
+    <input type="text" id="message" placeholder="Ваше сообщение">
+    <input type="number" id="amount" min="0.25" step="0.01" placeholder="Сумма $">
+    <button onclick="sendDonation()">Отправить</button>
 
-const ProductPage = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Ваш продукт</h1>
-      <img src="/product.jpg" alt="Product" className="w-64 h-64 object-cover rounded-xl shadow-md" />
-      <p className="text-lg mt-2">Описание продукта. Цена: $99.99</p>
-      <Elements stripe={stripePromise}>
-        <CheckoutForm />
-      </Elements>
-    </div>
-  );
-};
+    <script>
+        async function loadHistory() {
+            let response = await fetch('http://localhost:5000/history');
+            let data = await response.json();
+            let list = document.getElementById("history-list");
+            list.innerHTML = "";
+            data.forEach(entry => {
+                let item = document.createElement("li");
+                item.innerText = `${entry.location}: ${entry.message} ($${entry.amount})`;
+                list.appendChild(item);
+            });
+        }
 
-export default ProductPage;
+        async function sendDonation() {
+            let location = document.getElementById("location").value;
+            let message = document.getElementById("message").value;
+            let amount = parseFloat(document.getElementById("amount").value);
+            
+            if (amount < 0.25) {
+                alert("Минимальная сумма — $0.25");
+                return;
+            }
+
+            let response = await fetch('http://localhost:5000/donate', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ location, message, amount })
+            });
+
+            if (response.ok) {
+                alert("Спасибо за донат!");
+                loadHistory();
+            } else {
+                alert("Ошибка!");
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
