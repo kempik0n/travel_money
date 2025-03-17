@@ -1,0 +1,21 @@
+import React from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "./CheckoutForm";
+
+const stripePromise = loadStripe("your-publishable-key-here");
+
+const ProductPage = () => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <h1 className="text-3xl font-bold mb-4">Ваш продукт</h1>
+      <img src="/product.jpg" alt="Product" className="w-64 h-64 object-cover rounded-xl shadow-md" />
+      <p className="text-lg mt-2">Описание продукта. Цена: $99.99</p>
+      <Elements stripe={stripePromise}>
+        <CheckoutForm />
+      </Elements>
+    </div>
+  );
+};
+
+export default ProductPage;
